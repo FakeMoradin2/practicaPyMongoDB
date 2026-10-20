@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alumnos | Práctica MongoDB</title>
+  <style>
+    :root {
+      --fondo: #f3f6fb;
+      --tarjeta: #ffffff;
+      --texto: #0f172a;
+      --suave: #64748b;
+      --linea: #e2e8f0;
+      --marca: #0f766e;
+      --marca-oscura: #115e59;
+      --ok: #047857;
+      --ok-fondo: #d1fae5;
+      --no: #475569;
+      --no-fondo: #e2e8f0;
+      --error: #991b1b;
+      --error-fondo: #fee2e2;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: var(--texto);
+      background: var(--fondo);
+      line-height: 1.5;
+    }
+
+    .encabezado {
+      background: linear-gradient(135deg, var(--marca-oscura), var(--marca));
+      color: #fff;
+      padding: 2.2rem 1.25rem 1.8rem;
+    }
+
+    .contenedor { width: min(980px, calc(100% - 2rem)); margin: 0 auto; }
+
+    h1 { margin: 0 0 0.35rem; font-size: 1.8rem; font-weight: 700; }
+
+    .encabezado p { margin: 0; max-width: 40rem; color: #ccfbf1; }
+
+    .enlaces { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.1rem; }
+
+    .enlaces a {
+      color: #fff;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      border-radius: 999px;
+      padding: 0.3rem 0.8rem;
+      font-size: 0.92rem;
+    }
+
+    .enlaces a:hover { background: rgba(255, 255, 255, 0.14); }
+
+    main { margin-top: -1.2rem; padding-bottom: 2.5rem; }
+
+    .tarjeta {
+      background: var(--tarjeta);
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      padding: 1.25rem;
+    }
+
+    .resumen {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: baseline;
+      margin-bottom: 1rem;
+    }
+
+    .resumen h2 { margin: 0; font-size: 1.15rem; }
+
+    .resumen span { color: var(--suave); font-size: 0.95rem; }
+
+    .aviso {
+      margin: 0;
+      padding: 0.9rem 1rem;
+      border-radius: 12px;
+      background: #ecfeff;
+      color: var(--marca-oscura);
+    }
+
+    .aviso.error { background: var(--error-fondo); color: var(--error); }
+
+    .tabla-contenedor { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; min-width: 640px; }
+
+    caption {
+      text-align: left;
+      margin-bottom: 0.7rem;
+      color: var(--suave);
+      font-size: 0.92rem;
+    }
+
+    th, td { text-align: left; padding: 0.8rem 0.7rem; border-bottom: 1px solid var(--linea); }
+
+    th { font-size: 0.82rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--suave); }
+
+    tbody tr:hover { background: #f8fafc; }
+
+    .estado {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 0.15rem 0.65rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .estado.activo { background: var(--ok-fondo); color: var(--ok); }
+    .estado.inactivo { background: var(--no-fondo); color: var(--no); }
+
+    footer { color: var(--suave); font-size: 0.85rem; margin-top: 1rem; }
+
+    @media (max-width: 700px) {
+      table, thead, tbody, th, td, tr { display: block; min-width: 0; }
+      caption { display: block; width: 100%; }
+      thead { display: none; }
+      tr { border: 1px solid var(--linea); border-radius: 12px; margin-bottom: 0.8rem; padding: 0.4rem 0.7rem; }
+      td { border: 0; display: flex; justify-content: space-between; gap: 1rem; padding: 0.45rem 0; }
+      td::before { content: attr(data-label); color: var(--suave); font-weight: 600; }
+    }
+  </style>
+</head>
+<body>
+  <header class="encabezado">
+    <div class="contenedor">
+      <h1>Alumnos registrados</h1>
+      <p>Práctica de FastAPI con los documentos reales de MongoDB Atlas.</p>
+      <nav class="enlaces" aria-label="Accesos de la API">
+        <a href="/api/alumnos">JSON</a>
+        <a href="/api/alumnos/activos">Activos</a>
+        <a href="/api/alumnos/promedio?minimo=9">Promedio ≥ 9</a>
+        <a href="/docs">Swagger UI</a>
+        <a href="/test-mongo">Probar conexión</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="contenedor">
+    <section class="tarjeta">
+      {% if error %}
+        <p class="aviso error">{{ error }}</p>
+      {% elif alumnos %}
+        <div class="resumen">
+          <h2>Colección alumnos</h2>
+          <span>{{ alumnos|length }} registro(s)</span>
+        </div>
+        <div class="tabla-contenedor">
+          <table>
+            <caption>Datos obtenidos de la base practica_py.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Matrícula</th>
+                <th scope="col">Carrera</th>
+                <th scope="col">Promedio</th>
+                <th scope="col">Activo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for alumno in alumnos %}
+              <tr>
+                <td data-label="Nombre">{{ alumno.nombre }}</td>
+                <td data-label="Matrícula">{{ alumno.matricula }}</td>
+                <td data-label="Carrera">{{ alumno.carrera }}</td>
+                <td data-label="Promedio">{{ alumno.promedio }}</td>
+                <td data-label="Activo">
+                  {% if alumno.activo %}
+                    <span class="estado activo">Sí</span>
+                  {% else %}
+                    <span class="estado inactivo">No</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="aviso">No hay alumnos registrados en la colección.</p>
+      {% endif %}
+      <footer>Base de datos practica_py · colección alumnos</footer>
+    </section>
+  </main>
+</body>
+</html>
