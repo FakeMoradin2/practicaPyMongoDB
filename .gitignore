@@ -1,17 +1,6 @@
-# Entorno virtual y secretos
-.venv/
-venv/
 .env
-
-# Python
+.venv/
 __pycache__/
+master-key.bin
 *.py[cod]
-*.pyo
-.pytest_cache/
-.mypy_cache/
-
-# Sistema y archivos temporales
 .DS_Store
-*.log
-*.tmp
-*.swp
